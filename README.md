@@ -7,9 +7,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/yrzs/k3cloud/object"
-	"github.com/yrzs/k3cloud/response"
-	"github.com/yrzs/k3cloud/server"
+	"github.com/runnning/k3cloud/object"
+	"github.com/runnning/k3cloud/response"
+	"github.com/runnning/k3cloud/server"
 )
 
 func GetK3Config() *server.K3Config {
