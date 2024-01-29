@@ -8,7 +8,7 @@ import (
 
 type HashMap map[string]interface{}
 
-// MergeHashMap. 合并map
+// MergeHashMap MergeHashMap. 合并map
 func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 	if toMap == nil {
 		toMap = &HashMap{}
