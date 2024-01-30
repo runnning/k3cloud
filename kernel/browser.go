@@ -14,7 +14,7 @@ import (
 	"github.com/runnning/k3cloud/object"
 	resp "github.com/runnning/k3cloud/response"
 	"github.com/tidwall/gjson"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -22,7 +22,6 @@ import (
 	"time"
 )
 
-// Browser.
 type Browser struct {
 	cookies []*http.Cookie
 	client  *http.Client
@@ -39,7 +38,6 @@ func (t *httpTransport) SetProxyUrl(proxyUrl string) {
 	t.Transport.Proxy = proxy
 }
 
-// NewBrowserWithTransport.
 func NewBrowserWithTransport() *Browser {
 	hc := &Browser{}
 	hc.client = &http.Client{
@@ -64,7 +62,7 @@ func NewBrowserWithTransport() *Browser {
 	return hc
 }
 
-// SetProxyUrl. 设置代理地址
+// SetProxyUrl 设置代理地址
 func (b *Browser) SetProxyUrl(proxyUrl string) {
 	proxy := func(_ *http.Request) (*url.URL, error) {
 		return url.Parse(proxyUrl)
@@ -73,12 +71,12 @@ func (b *Browser) SetProxyUrl(proxyUrl string) {
 	b.client.Transport = transport
 }
 
-// AddCookie. 设置请求cookie
+// AddCookie 设置请求cookie
 func (b *Browser) AddCookie(cookies []*http.Cookie) {
 	b.cookies = append(b.cookies, cookies...)
 }
 
-// appendCookie. 追加请求cookie
+// appendCookie 追加请求cookie
 func (b *Browser) appendCookie(cookies []*http.Cookie) {
 	if len(b.cookies) > 2 {
 		b.cookies = b.cookies[:len(b.cookies)-1]
@@ -86,21 +84,21 @@ func (b *Browser) appendCookie(cookies []*http.Cookie) {
 	b.cookies = append(b.cookies, cookies...)
 }
 
-// GetCookie. 获取当前所有的cookie
+// GetCookie 获取当前所有的cookie
 func (b *Browser) GetCookie() []*http.Cookie {
 	return b.cookies
 }
 
-// setRequestCookie. 为请求设置cookie
+// setRequestCookie 为请求设置cookie
 func (b *Browser) setRequestCookie(request *http.Request) {
 	for _, v := range b.cookies {
 		request.AddCookie(v)
 	}
 }
 
-// initLogin.
+// InitLogin initLogin
 func (b *Browser) InitLogin(c *K3Config) error {
-	var parameters = make([]interface{}, 0, 4)
+	var parameters = make([]any, 0, 4)
 	parameters = append(parameters, c.AccID)
 	parameters = append(parameters, c.Username)
 	parameters = append(parameters, c.Password)
@@ -126,7 +124,7 @@ func (b *Browser) InitLogin(c *K3Config) error {
 	return nil
 }
 
-// PostJson. 发送Post请求Json格式数据
+// PostJson 发送Post请求Json格式数据
 func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, params *object.HashMap) (*object.HashMap, error) {
 	// 设置日志前缀和格式
 	log.SetPrefix("[Info]")
@@ -141,15 +139,17 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 	if err != nil {
 		return nil, errors.New("http post json fail")
 	}
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
 	//保存响应的 cookie
 	b.cookies = response.Cookies()
-	data, e := ioutil.ReadAll(response.Body)
+	data, e := io.ReadAll(response.Body)
 	if e != nil {
 		return nil, errors.New("http read io result fail")
 	}
 	var res object.HashMap
-	res, ok := gjson.Parse(string(data)).Value().(map[string]interface{})
+	res, ok := gjson.Parse(string(data)).Value().(map[string]any)
 	if !ok {
 		var k3Response [][]*resp.K3Response
 		if e = json.Unmarshal(data, &k3Response); e == nil {
@@ -165,7 +165,7 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 				}
 			}
 		}
-		mm, okk := gjson.Parse(string(data)).Value().([]interface{})
+		mm, okk := gjson.Parse(string(data)).Value().([]any)
 		if okk {
 			res = object.HashMap{
 				"data": mm,

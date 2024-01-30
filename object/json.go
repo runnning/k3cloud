@@ -3,10 +3,10 @@ package object
 import (
 	"encoding/json"
 	"io/fs"
-	"io/ioutil"
+	"os"
 )
 
-func JsonEncode(v interface{}) (string, error) {
+func JsonEncode(v any) (string, error) {
 	buffer, err := json.Marshal(v)
 
 	if err != nil {
@@ -15,7 +15,7 @@ func JsonEncode(v interface{}) (string, error) {
 	return string(buffer), nil
 }
 
-func JsonDecode(data []byte, v interface{}) error {
+func JsonDecode(data []byte, v any) error {
 	return json.Unmarshal(data, v)
 }
 
@@ -27,14 +27,14 @@ func JsonEscape(str string) (string, error) {
 	return string(b[1 : len(b)-1]), err
 }
 
-func SaveObjectToFile(obj interface{}, filePath string, perm fs.FileMode) (err error) {
+func SaveObjectToFile(obj any, filePath string, perm fs.FileMode) (err error) {
 
 	buff, err := json.MarshalIndent(obj, "", " ")
 	if err != nil {
 		return err
 	}
 
-	err = ioutil.WriteFile(filePath, buff, perm)
+	err = os.WriteFile(filePath, buff, perm)
 
 	return err
 }

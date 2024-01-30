@@ -19,12 +19,12 @@ type K3Status struct {
 	ErrorCode int  `json:"ErrorCode"`
 	IsSuccess bool `json:"IsSuccess"`
 	Errors    []struct {
-		FieldName interface{}    `json:"FieldName"`
+		FieldName any    `json:"FieldName"`
 		Message   string `json:"Message"`
 		DIndex    int    `json:"DIndex"`
 	} `json:"Errors"`
 	SuccessEntitys  []SuccessEntities `json:"SuccessEntitys"`
-	SuccessMessages []interface{}     `json:"SuccessMessages"`
+	SuccessMessages []any             `json:"SuccessMessages"`
 	MsgCode         int               `json:"MsgCode"`
 }
 

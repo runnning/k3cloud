@@ -10,7 +10,6 @@ import (
 
 type StringMap map[string]string
 
-// ------------------------------- Merge --------------------------------------------
 func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *StringMap {
 	if toStringMap == nil {
 		toStringMap = &StringMap{}
@@ -31,7 +30,6 @@ func MergeStringMap(toStringMap *StringMap, subStringMaps ...*StringMap) *String
 	return toStringMap
 }
 
-// ------------------------------- Replace --------------------------------------------
 func ReplaceStringMapRecursive(toMap *StringMap, subMaps ...*StringMap) *StringMap {
 	if toMap == nil {
 		toMap = &StringMap{}
@@ -57,9 +55,7 @@ func ConvertStringMapToString(m *StringMap, separate string) string {
 	return b.String()
 }
 
-// ------------------------------- Conversion ---------------------------------------
-
-func StructToStringMapWithTag(obj interface{}, tag string) (newMap *StringMap, err error) {
+func StructToStringMapWithTag(obj any, tag string) (newMap *StringMap, err error) {
 
 	newMap = &StringMap{}
 
@@ -71,9 +67,7 @@ func StructToStringMapWithTag(obj interface{}, tag string) (newMap *StringMap, e
 
 	for i := 0; i < e.NumField(); i++ {
 		field := e.Field(i).Interface()
-		var strField string = ""
-
-		strField = fmt.Sprintf("%v", field)
+		strField := fmt.Sprintf("%v", field)
 		key := e.Type().Field(i).Name
 		if tag != "" {
 			key = e.Type().Field(i).Tag.Get(tag)
@@ -86,7 +80,7 @@ func StructToStringMapWithTag(obj interface{}, tag string) (newMap *StringMap, e
 
 }
 
-func StructToStringMap(obj interface{}) (newMap *StringMap, err error) {
+func StructToStringMap(obj any) (newMap *StringMap, err error) {
 	data, err := json.Marshal(obj) // Convert to a json string
 
 	if err != nil {
@@ -150,7 +144,6 @@ func GetStringMapKV(maps StringMap) (keys []string, values []string) {
 	return keys, values
 }
 
-// ------------------------------- Filter --------------------------------------------
 func FilterEmptyStringMap(mapData *StringMap) (filteredMap *StringMap) {
 	filteredMap = &StringMap{}
 	for k, v := range *mapData {

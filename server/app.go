@@ -4,7 +4,7 @@ import (
 	"github.com/runnning/k3cloud/kernel"
 )
 
-// NewK3Cloud. new application
+// NewK3Cloud new application
 func NewK3Cloud(c *kernel.K3Config) (*kernel.K3Cloud, error) {
 	browser := kernel.NewBrowserWithTransport()
 	//err := browser.InitLogin(c)
