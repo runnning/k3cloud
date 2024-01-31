@@ -6,14 +6,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/runnning/k3cloud/kernel"
 	"github.com/runnning/k3cloud/object"
 	"github.com/runnning/k3cloud/response"
 	"github.com/runnning/k3cloud/server"
 )
 
-func GetK3Config() *server.K3Config {
-	return &server.K3Config{
+func GetK3Config() *kernel.K3Config {
+	return &kernel.K3Config{
 		Host:     "http://xxx/k3cloud/",
 		AccID:    "AccID",
 		Username: "Username",
@@ -31,7 +33,7 @@ func main() {
 		"FormId":    "BD_MATERIAL",
 		"FieldKeys": "FNUMBER,Fname",
 	}
-    ctx := context.Background()
+	ctx := context.Background()
 	res, _ := k3cloud.ExecuteBillQuery(ctx, d)
 	var resp = &response.BillQueryResponse{}
 	if err := object.HashMapToStructure(res, resp); err == nil {
