@@ -11,6 +11,7 @@ func NewK3Cloud(c *kernel.K3Config) (*kernel.K3Cloud, error) {
 	//if err != nil {
 	//	return nil, err
 	//}
+
 	app := &kernel.K3Cloud{
 		Config: c,
 		Client: browser,
