@@ -168,17 +168,14 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 	res, ok := gjson.Parse(string(data)).Value().(map[string]any)
 	if !ok {
 		var k3Response [][]*resp.K3Response
-		if err := json.Unmarshal(data, &k3Response); err != nil {
-			return nil, errors.New("failed to parse JSON response: " + err.Error())
-		}
-
-		if len(k3Response) > 0 && k3Response[0][0].Result.Status.ErrorCode == http.StatusInternalServerError && k3Response[0][0].Result.Status.Errors[0].Message == "会话信息已丢失，请重新登录" {
-			if err := b.InitLogin(c); err != nil {
-				return nil, errors.New("failed to re-login: " + err.Error())
+		if err := json.Unmarshal(data, &k3Response); err == nil {
+			if len(k3Response) > 0 && k3Response[0][0].Result.Status.ErrorCode == http.StatusInternalServerError && k3Response[0][0].Result.Status.Errors[0].Message == "会话信息已丢失，请重新登录" {
+				if err := b.InitLogin(c); err != nil {
+					return nil, errors.New("failed to re-login: " + err.Error())
+				}
+				return b.PostJson(ctx, c, requestUrl, params)
 			}
-			return b.PostJson(ctx, c, requestUrl, params)
 		}
-
 		mm, okk := gjson.Parse(string(data)).Value().([]any)
 		if okk {
 			res = object.HashMap{
