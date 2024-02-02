@@ -15,7 +15,6 @@ import (
 	"github.com/runnning/k3cloud/object"
 	resp "github.com/runnning/k3cloud/response"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -130,8 +129,8 @@ func (b *Browser) InitLogin(c *K3Config) error {
 // PostJson 发送Post请求Json格式数据
 func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, params *object.HashMap) (*object.HashMap, error) {
 	// 设置日志前缀和格式
-	log.SetPrefix("[Info]")
-	log.SetFlags(log.Ldate | log.Ltime)
+	//log.SetPrefix("[Info]")
+	//log.SetFlags(log.Ldate | log.Ltime)
 
 	postData, err := object.JsonEncode(params)
 	if err != nil {
