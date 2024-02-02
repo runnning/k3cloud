@@ -11,9 +11,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/runnning/k3cloud/object"
 	resp "github.com/runnning/k3cloud/response"
+	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
 	"net/url"
@@ -149,7 +149,7 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 
 	response, err := b.client.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform HTTP request: %w", err)
+		return nil, errors.New("failed to perform HTTP request: " + err.Error())
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -164,24 +164,23 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 	}
 
 	var res object.HashMap
-
-	if err := json.Unmarshal(data, &res); err != nil {
+	res, ok := gjson.Parse(string(data)).Value().(map[string]any)
+	if !ok {
 		var k3Response [][]*resp.K3Response
-		if err := json.Unmarshal(data, &k3Response); err != nil {
-			return nil, fmt.Errorf("failed to parse JSON response: %w", err)
-		}
-
-		if len(k3Response) > 0 && k3Response[0][0].Result.Status.ErrorCode == http.StatusInternalServerError && k3Response[0][0].Result.Status.Errors[0].Message == "会话信息已丢失，请重新登录" {
-			if err := b.InitLogin(c); err != nil {
-				return nil, fmt.Errorf("failed to re-login: %w", err)
+		if err := json.Unmarshal(data, &k3Response); err == nil {
+			if len(k3Response) > 0 && k3Response[0][0].Result.Status.ErrorCode == http.StatusInternalServerError && k3Response[0][0].Result.Status.Errors[0].Message == "会话信息已丢失，请重新登录" {
+				if err := b.InitLogin(c); err != nil {
+					return nil, errors.New("failed to re-login: " + err.Error())
+				}
+				return b.PostJson(ctx, c, requestUrl, params)
 			}
-			return b.PostJson(ctx, c, requestUrl, params)
 		}
-
-		res = object.HashMap{
-			"data": k3Response,
+		mm, okk := gjson.Parse(string(data)).Value().([]any)
+		if okk {
+			res = object.HashMap{
+				"data": mm,
+			}
 		}
 	}
-
 	return &res, nil
 }
