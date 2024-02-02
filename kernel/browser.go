@@ -171,7 +171,7 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 		if err := json.Unmarshal(data, &k3Response); err == nil {
 			if len(k3Response) > 0 && k3Response[0][0].Result.Status.ErrorCode == http.StatusInternalServerError && k3Response[0][0].Result.Status.Errors[0].Message == "会话信息已丢失，请重新登录" {
 				if err := b.InitLogin(c); err != nil {
-					return nil, errors.New("failed to re-login: " + err.Error())
+					return nil, errors.New(utils.ConcatenateStrings("failed to re-login: ", err.Error()))
 				}
 				return b.PostJson(ctx, c, requestUrl, params)
 			}
