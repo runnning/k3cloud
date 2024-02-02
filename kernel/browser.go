@@ -13,6 +13,7 @@ import (
 	"errors"
 	"github.com/runnning/k3cloud/object"
 	resp "github.com/runnning/k3cloud/response"
+	"github.com/runnning/k3cloud/utils"
 	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
@@ -113,7 +114,7 @@ func (b *Browser) InitLogin(c *K3Config) error {
 	ctx := context.Background()
 	res, e := b.PostJson(ctx, c, c.Host+LoginApi, data)
 	if e != nil {
-		return errors.New("post request err: " + e.Error())
+		return errors.New(utils.ConcatenateStrings("post request err: ", e.Error()))
 	}
 	var k3Response = &resp.LoginResponse{}
 	e = object.HashMapToStructure(res, k3Response)
@@ -134,12 +135,12 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 
 	postData, err := object.JsonEncode(params)
 	if err != nil {
-		return nil, errors.New("failed to encode JSON: " + err.Error())
+		return nil, errors.New(utils.ConcatenateStrings("failed to encode JSON: ", err.Error()))
 	}
 
 	request, err := http.NewRequest("POST", requestUrl, strings.NewReader(postData))
 	if err != nil {
-		return nil, errors.New("failed to create HTTP request: " + err.Error())
+		return nil, errors.New(utils.ConcatenateStrings("failed to create HTTP request: ", err.Error()))
 	}
 
 	// 携带ctx
@@ -149,7 +150,7 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 
 	response, err := b.client.Do(request)
 	if err != nil {
-		return nil, errors.New("failed to perform HTTP request: " + err.Error())
+		return nil, errors.New(utils.ConcatenateStrings("failed to perform HTTP request: ", err.Error()))
 	}
 	defer func(Body io.ReadCloser) {
 		_ = Body.Close()
@@ -160,11 +161,11 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
-		return nil, errors.New("failed to read response body: " + err.Error())
+		return nil, errors.New(utils.ConcatenateStrings("failed to read response body: ", err.Error()))
 	}
 
 	var res object.HashMap
-	res, ok := gjson.Parse(string(data)).Value().(map[string]any)
+	res, ok := gjson.Parse(utils.BytesToString(data)).Value().(map[string]any)
 	if !ok {
 		var k3Response [][]*resp.K3Response
 		if err := json.Unmarshal(data, &k3Response); err == nil {
@@ -175,7 +176,7 @@ func (b *Browser) PostJson(ctx context.Context, c *K3Config, requestUrl string, 
 				return b.PostJson(ctx, c, requestUrl, params)
 			}
 		}
-		mm, okk := gjson.Parse(string(data)).Value().([]any)
+		mm, okk := gjson.Parse(utils.BytesToString(data)).Value().([]any)
 		if okk {
 			res = object.HashMap{
 				"data": mm,
