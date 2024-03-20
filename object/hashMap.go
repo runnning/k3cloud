@@ -30,7 +30,6 @@ func MergeHashMap(toMap *HashMap, subMaps ...*HashMap) *HashMap {
 					if (*toMap)[k] == "" && v != "" {
 						(*toMap)[k] = v
 					}
-					break
 				}
 			}
 		}
@@ -106,7 +105,7 @@ func InHash(val any, hash *HashMap) (exists bool, key string) {
 	case reflect.Map:
 		//s := reflect.ValueOf(hash)
 		for k, v := range *hash {
-			if reflect.DeepEqual(val, v) == true {
+			if reflect.DeepEqual(val, v) {
 				key = k
 				return
 			}
@@ -133,14 +132,11 @@ func FilterEmptyHashMap(mapData *HashMap) (filteredMap *HashMap) {
 	for k, v := range *mapData {
 		if v != nil {
 			(*filteredMap)[k] = v
-			switch v.(type) {
+			switch value := v.(type) {
 			case HashMap:
-				o := v.(HashMap)
-				v = FilterEmptyHashMap(&o)
-				break
+				v = FilterEmptyHashMap(&value)
 			case *HashMap:
-				v = FilterEmptyHashMap(v.(*HashMap))
-				break
+				v = FilterEmptyHashMap(value)
 			//case []interface{}:
 			//	for _, obj := range v.([]interface{}) {
 			//		switch obj.(type) {
@@ -154,10 +150,9 @@ func FilterEmptyHashMap(mapData *HashMap) (filteredMap *HashMap) {
 			//	}
 			//	break
 			case string:
-				if v.(string) == "" {
+				if value == "" {
 					delete(*filteredMap, k)
 				}
-				break
 			}
 		}
 	}
