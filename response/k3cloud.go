@@ -1,7 +1,7 @@
 package response
 
 type K3Response struct {
-	Result Result `json:"Result"`
+	Result *Result `json:"Result"`
 }
 
 type Result struct {
